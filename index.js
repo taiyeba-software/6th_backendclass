@@ -6,34 +6,67 @@ const app = express();
 app.use(express.json())
 
 const connectToDB = require("./src/DB/db");
-const { connect } = require("mongoose");
+const NoteModel = require("./src/models/note.model"); 
 
-connectToDB(); //calling the function to connect to the database
+connectToDB();
 
 
-app.post("/notes",(req,res)=>{
+app.post("/notes",async (req,res)=>{
 
-    const {title,content}= req.body; /*👉 এটা হলো object destructuring — মানে তুমি req.body অবজেক্ট থেকে title আর content নামের দুইটা key আলাদা করে ফেলছো। */
-  /**
-   🎁 কল্পনার প্যাকেট analogy:
-   ধরো তোমার হাতে একটা প্যাকেট (📦) আছে, যার ভেতরে লেখা আছে এইসব তথ্য:
-   {
-  "title": "My First Note",
-  "content": "Backend is fun!",
-  "author": "Taiyeba",
-  "views": 500
-   }
-  এখন তুমি বললে:
-  “আমি শুধু title আর content চাই—বাকিটা আমার দরকার নেই।”
-
-   */
+    const {title,content}= req.body; 
     console.log(title,content);
+
+    await NoteModel.create({
+    
+        title,
+        content
+    })
+
+    res.json({
+        title,content 
+    })
+
+})
+
+app.delete("/notes/:id", async(req,res)=>{
+
+    const noteId =req.params.id
+
+    await NoteModel.findByIdAndDelete({
+        _id : noteId
+    });
+
+    res.json({
+        messege: "Note deleted successfully",
+        
+    })
+})
+
+app.patch("/notes/:id", async(req,res)=>{
+    const noteId = req.params.id;
+    const {title} =req.body;
+
+    await NoteModel.findByIdAndUpdate({
+        _id: noteId
+    },{
+        title:title
+    });
 
 })
 
 
+app.get("/notes", async (req, res) => {
+  const notes = await NoteModel.find();
+  res.json({
+    message: "Notes fetched successfully",
+     notes
+  });
+});
+
+
 app.get("/",(req,res)=>{
     res.send("Hello, World!");
+    data: notes
 })
 
 app.listen(3000,()=>{

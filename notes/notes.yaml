@@ -1,0 +1,103 @@
+const express = require("express");
+
+const app = express();
+
+
+app.use(express.json())
+
+const connectToDB = require("./src/DB/db");
+const NoteModel = require("./src/models/note.model"); //importing the NoteModel from the note.model.js file
+const { connect } = require("mongoose");
+
+connectToDB(); //calling the function to connect to the database
+
+
+app.post("/notes",async (req,res)=>{
+    /*
+    👉 এই async keyword বলছে:
+    “এই function-এর ভিতরে asynchronous কাজ (যেমন database query) হবে — তাই আমি promise handle করতে প্রস্তুত!”
+    📌 Express route handler-এ async ব্যবহার করলে তুমি await keyword ইউজ করতে পারো function এর ভিতর।
+   */
+    const {title,content}= req.body; /*👉 এটা হলো object destructuring — মানে তুমি req.body অবজেক্ট থেকে title আর content নামের দুইটা key আলাদা করে ফেলছো। */
+  /**
+   🎁 কল্পনার প্যাকেট analogy:
+   ধরো তোমার হাতে একটা প্যাকেট (📦) আছে, যার ভেতরে লেখা আছে এইসব তথ্য:
+   {
+  "title": "My First Note",
+  "content": "Backend is fun!",
+  "author": "Taiyeba",
+  "views": 500
+   }
+  এখন তুমি বললে:
+  “আমি শুধু title আর content চাই—বাকিটা আমার দরকার নেই।”
+
+   */
+    console.log(title,content);
+
+    await NoteModel.create({
+        /*
+        👉 এই await keyword বলছে:
+
+        “আমি NoteModel.create() এর result আসা পর্যন্ত অপেক্ষা করবো, তারপর পরের লাইন চালাবো।”
+        📌 এখানে NoteModel.create() MongoDB-তে async insertion করে → এটা promise return করে await দিয়ে তুমি async কাজকে sync-র মতো handle করছো, যাতে error বা race condition না হয়
+
+        🎁 Analogy (Taiyeba-style 😉):
+            async function মানে: তুমি একটা রেস্তোরাঁর waiter — তুমি জানো কিছু খাবার তৈরিতে সময় লাগবে
+
+            await মানে: তুমি বলছো "এই খাবারটা আসুক, তারপর পরের অর্ডার নেব!"
+
+        */
+        title,
+        content
+    })
+
+    res.json({
+        title,content 
+    })
+
+})
+
+app.delete("/notes/:id", async(req,res)=>{
+
+    const noteId =req.params.id
+
+    await NoteModel.findByIdAndDelete({
+        _id : noteId
+    });
+
+    res.json({
+        messege: "Note deleted successfully",
+        
+    })
+})
+
+app.patch("/notes/:id", async(req,res)=>{
+    const noteId = req.params.id;
+    const {title} =req.body;
+
+    await NoteModel.findByIdAndUpdate({
+        _id: noteId
+    },{
+        title:title
+    });
+
+})
+
+
+app.get("/notes", async (req, res) => {
+  const notes = await NoteModel.find();
+  res.json({
+    message: "Notes fetched successfully",
+     notes
+  });
+});
+
+
+app.get("/",(req,res)=>{
+    res.send("Hello, World!");
+    data: notes
+})
+
+app.listen(3000,()=>{
+    console.log("Server is running on port 3000");
+})
