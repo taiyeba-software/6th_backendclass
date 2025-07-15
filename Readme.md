@@ -33,15 +33,16 @@ It allows users to create, read, update, and delete notes with a clean structure
    npm init -y
 
 2. **Install dependencies:** 
-npm install express mongoose
+      ```bash
+      npm install express mongoose
 
 3. **(Optional) Install dev dependencies:**
-
-npm install --save-dev nodemon
+   ```bash
+   npm install --save-dev nodemon
 
 4. **Start the server:**
-
-npm run dev
+   ```bash
+    npm run dev
 
 
 5. **Visit your backend:**
